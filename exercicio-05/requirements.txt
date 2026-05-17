@@ -1,0 +1,9 @@
+fastapi
+pytest>=7.0
+pytest-asyncio>=0.21.0
+httpx>=0.24.0
+uvicorn
+email-validator
+python-multipart
+asyncpg
+
