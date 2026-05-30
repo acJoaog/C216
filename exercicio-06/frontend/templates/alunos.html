@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alunos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Alunos</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/about">Sobre</a>
+            <a href="/contact">Contato</a>
+            <a href="/alunos">Alunos</a>
+        </nav>
+    </header>
+    <section>
+        <h2>Lista de Alunos</h2>
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+        {% if not alunos %}
+            <p>Nenhum aluno encontrado.</p>
+        {% else %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Curso</th>
+                        <th>Matrícula</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for aluno in alunos %}
+                        <tr>
+                            <td>{{ aluno.id }}</td>
+                            <td>{{ aluno.nome }}</td>
+                            <td>{{ aluno.email }}</td>
+                            <td>{{ aluno.curso }}</td>
+                            <td>{{ aluno.matricula }}</td>
+                            <td><a href="/alunos/editar/{{ aluno.id }}">Editar</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </section>
+
+    <section>
+        <h2>{{ 'Editar Aluno' if is_edit else 'Cadastrar Aluno' }}</h2>
+        <form action="{{ url_for('salvar_edicao_aluno', aluno_id=edit_aluno.id) if is_edit else url_for('cadastrar_aluno') }}" method="post">
+            {% if is_edit %}
+                <input type="hidden" name="id" value="{{ edit_aluno.id }}">
+            {% endif %}
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" value="{{ edit_aluno.nome if edit_aluno else '' }}" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ edit_aluno.email if edit_aluno else '' }}" required>
+
+            <label for="curso">Curso:</label>
+            <select id="curso" name="curso" required>
+                <option value="" disabled {{ 'selected' if not edit_aluno }}>Selecione o curso</option>
+                <option value="GES" {{ 'selected' if edit_aluno and edit_aluno.curso == 'GES' }}>GES</option>
+                <option value="GEC" {{ 'selected' if edit_aluno and edit_aluno.curso == 'GEC' }}>GEC</option>
+            </select>
+
+            {% if is_edit and edit_aluno and edit_aluno.matricula is defined %}
+                <p><strong>Matrícula atual:</strong> {{ edit_aluno.matricula }}</p>
+            {% endif %}
+
+            <button type="submit">{{ 'Salvar alterações' if is_edit else 'Cadastrar aluno' }}</button>
+            {% if is_edit %}
+                <a class="button-link" href="/alunos">Cancelar edição</a>
+            {% endif %}
+        </form>
+        <p>Esta página foi criada por João Gabriel - GES258</p>
+    </section>
+</body>
+</html>

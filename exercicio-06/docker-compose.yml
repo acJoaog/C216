@@ -1,0 +1,56 @@
+services:
+  backend:
+    container_name: middleware-api
+    build: ./backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/alunos_db
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    container_name: postgres-db
+    image: postgres:15
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=alunos_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/app/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d alunos_db"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  tests:
+    container_name: middleware-tests
+    build: ./backend
+    command: >
+      sh -c "pip install --no-cache-dir pytest pytest-asyncio httpx &&
+             pytest -q backend/tests"
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/alunos_db
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    restart: always
+    ports:
+        - "3000:3000"
+    depends_on:
+        - backend
+
+volumes:
+  pgdata:
